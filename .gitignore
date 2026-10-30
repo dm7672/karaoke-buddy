@@ -1,0 +1,21 @@
+# Gradle / Android Studio
+.gradle/
+build/
+local.properties
+.idea/
+*.iml
+captures/
+.externalNativeBuild/
+.cxx/
+.kotlin/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Audio and lyrics are not committed
+*.mp3
+*.wav
+*.flac
+*.m4a
+*.lrc
