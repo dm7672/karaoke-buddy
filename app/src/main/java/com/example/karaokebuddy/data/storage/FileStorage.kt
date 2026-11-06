@@ -1,5 +1,6 @@
 package com.example.karaokebuddy.data.storage
 
+import android.content.Context
 import com.example.karaokebuddy.data.json.json
 import com.example.karaokebuddy.data.json.parse
 import com.example.karaokebuddy.domain.model.Song
@@ -7,7 +8,9 @@ import org.json.JSONArray
 import java.io.File
 import java.util.UUID
 
-class FileStorage(private val file: File) {
+class FileStorage internal constructor(private val file: File) {
+    constructor(context: Context) : this(File(context.filesDir, "songs.json"))
+
     private val items = linkedMapOf<UUID, Song>()
 
     val songs: List<Song>
@@ -27,6 +30,7 @@ class FileStorage(private val file: File) {
         for (song in items.values) {
             json.put(song.json)
         }
+        file.parentFile?.mkdirs()
         file.writeText(json.toString(2))
     }
 

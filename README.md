@@ -104,7 +104,7 @@ Android-приложение для караоке на любой песне. �
 а `FileStorage` хранит библиотеку в JSON-файле. Пример использования в Android:
 
 ```kotlin
-val storage = FileStorage(File(context.filesDir, "songs.json"))
+val storage = FileStorage(context)
 storage.load()
 storage.add(Song(name = "Песня", status = SongStatus.QUEUED))
 storage.save()
