@@ -28,13 +28,13 @@ internal fun songsFromJson(text: String): List<Song> {
     val songs = mutableListOf<Song>()
     for (index in 0 until json.length()) {
         val entry = json.optJSONObject(index) ?: continue
-        val song = parse(entry) ?: continue
+        val song = Song.parse(entry) ?: continue
         songs.add(song)
     }
     return songs
 }
 
-fun parse(json: JSONObject): Song? = try {
+fun Song.Companion.parse(json: JSONObject): Song? = try {
     Song(
         uid = UUID.fromString(json.getString("uid")),
         name = json.getString("name"),

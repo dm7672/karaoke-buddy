@@ -15,4 +15,6 @@ data class Song(
     val vocalPath: File? = null,
     val timedLyrics: TimedLyrics? = null,
     val isFavorite: Boolean = false,
-)
+) {
+    companion object
+}
