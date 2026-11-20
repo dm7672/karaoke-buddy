@@ -10,6 +10,7 @@ import com.example.karaokebuddy.domain.model.TimedText
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
+import java.net.URI
 import kotlin.time.Duration.Companion.milliseconds
 
 class SongJsonTest {
@@ -19,9 +20,9 @@ class SongJsonTest {
             name = "Кино — Группа крови",
             status = SongStatus.READY,
             color = Color.Red,
-            sourceUrl = "https://www.youtube.com/watch?v=example",
-            instrumentalPath = "audio/instrumental.wav",
-            vocalPath = "audio/vocal.wav",
+            sourceUrl = URI.create("https://www.youtube.com/watch?v=example"),
+            instrumentalPath = File("audio/instrumental.wav"),
+            vocalPath = File("audio/vocal.wav"),
             timedLyrics = TimedLyrics(listOf(
                 OffsetLine(
                     startMs = 1000,

@@ -10,6 +10,8 @@ import com.example.karaokebuddy.domain.model.TimedText
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
+import java.io.File
+import java.net.URI
 import java.util.UUID
 import kotlin.time.Duration
 
@@ -38,9 +40,9 @@ fun parse(json: JSONObject): Song? = try {
         name = json.getString("name"),
         status = SongStatus.valueOf(json.optString("status", SongStatus.QUEUED.name)),
         color = Color(json.optInt("color", Color.White.toArgb())),
-        sourceUrl = if (json.isNull("sourceUrl")) null else json.getString("sourceUrl"),
-        instrumentalPath = if (json.isNull("instrumentalPath")) null else json.getString("instrumentalPath"),
-        vocalPath = if (json.isNull("vocalPath")) null else json.getString("vocalPath"),
+        sourceUrl = json.optionalNonBlankString("sourceUrl")?.let(URI::create),
+        instrumentalPath = json.optionalNonBlankString("instrumentalPath")?.let(::File),
+        vocalPath = json.optionalNonBlankString("vocalPath")?.let(::File),
         timedLyrics = if (json.isNull("timedLyrics")) null else parseLyrics(json.getJSONObject("timedLyrics")),
         isFavorite = json.optBoolean("isFavorite", false),
     )
@@ -50,15 +52,22 @@ fun parse(json: JSONObject): Song? = try {
     null
 }
 
+private fun JSONObject.optionalNonBlankString(key: String): String? {
+    if (isNull(key)) return null
+    val value = get(key)
+    require(value is String && value.isNotBlank())
+    return value
+}
+
 val Song.json: JSONObject
     get() = JSONObject().apply {
         put("uid", uid.toString())
         put("name", name)
         if (status != SongStatus.QUEUED) put("status", status.name)
         if (color != Color.White) put("color", color.toArgb())
-        sourceUrl?.let { put("sourceUrl", it) }
-        instrumentalPath?.let { put("instrumentalPath", it) }
-        vocalPath?.let { put("vocalPath", it) }
+        sourceUrl?.let { put("sourceUrl", it.toString()) }
+        instrumentalPath?.let { put("instrumentalPath", it.path) }
+        vocalPath?.let { put("vocalPath", it.path) }
         timedLyrics?.let { put("timedLyrics", it.json) }
         put("isFavorite", isFavorite)
     }
