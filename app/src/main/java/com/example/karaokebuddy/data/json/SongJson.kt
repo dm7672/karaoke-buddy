@@ -13,6 +13,25 @@ import org.json.JSONObject
 import java.util.UUID
 import kotlin.time.Duration
 
+internal fun songsToJson(songs: Collection<Song>): String {
+    val json = JSONArray()
+    for (song in songs) {
+        json.put(song.json)
+    }
+    return json.toString(2)
+}
+
+internal fun songsFromJson(text: String): List<Song> {
+    val json = JSONArray(text)
+    val songs = mutableListOf<Song>()
+    for (index in 0 until json.length()) {
+        val entry = json.optJSONObject(index) ?: continue
+        val song = parse(entry) ?: continue
+        songs.add(song)
+    }
+    return songs
+}
+
 fun parse(json: JSONObject): Song? = try {
     Song(
         uid = UUID.fromString(json.getString("uid")),

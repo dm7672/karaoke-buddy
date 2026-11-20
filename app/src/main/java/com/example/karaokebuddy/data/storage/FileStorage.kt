@@ -1,11 +1,12 @@
 package com.example.karaokebuddy.data.storage
 
 import android.content.Context
-import com.example.karaokebuddy.data.json.json
-import com.example.karaokebuddy.data.json.parse
+import com.example.karaokebuddy.data.json.songsFromJson
+import com.example.karaokebuddy.data.json.songsToJson
 import com.example.karaokebuddy.domain.model.Song
-import org.json.JSONArray
+import timber.log.Timber
 import java.io.File
+import java.io.IOException
 import java.util.UUID
 
 class FileStorage internal constructor(private val file: File) {
@@ -16,7 +17,6 @@ class FileStorage internal constructor(private val file: File) {
     val songs: List<Song>
         get() = items.values.toList()
 
-    // Песня с таким же uid заменяет предыдущую запись.
     fun add(song: Song) {
         items[song.uid] = song
     }
@@ -26,29 +26,27 @@ class FileStorage internal constructor(private val file: File) {
     }
 
     fun save() {
-        val json = JSONArray()
-        for (song in items.values) {
-            json.put(song.json)
+        Timber.i("save: start, %d songs", items.size)
+        try {
+            file.parentFile?.mkdirs()
+            file.writeText(songsToJson(items.values))
+            Timber.i("save: done, %d bytes", file.length())
+        } catch (e: IOException) {
+            Timber.e(e, "save: failed")
+            throw e
         }
-        file.parentFile?.mkdirs()
-        file.writeText(json.toString(2))
     }
 
     fun load() {
         if (!file.exists()) {
             items.clear()
+            Timber.w("load: file does not exist, cleared the library")
             return
         }
 
-        val json = JSONArray(file.readText())
-        val loaded = linkedMapOf<UUID, Song>()
-        for (index in 0 until json.length()) {
-            val entry = json.optJSONObject(index) ?: continue
-            val song = parse(entry) ?: continue
-            loaded[song.uid] = song
-        }
-
+        val loaded = songsFromJson(file.readText()).associateBy { it.uid }
         items.clear()
         items.putAll(loaded)
+        Timber.d("load: %d songs restored", items.size)
     }
 }

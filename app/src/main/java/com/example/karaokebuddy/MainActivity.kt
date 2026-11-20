@@ -11,12 +11,21 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.example.karaokebuddy.data.storage.FileStorage
+import com.example.karaokebuddy.domain.model.Song
+import com.example.karaokebuddy.domain.model.SongStatus
 import com.example.karaokebuddy.ui.theme.KaraokeBuddyTheme
+import java.io.File
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        if (BuildConfig.DEBUG) {
+            demonstrateFileStorage()
+        }
         setContent {
             KaraokeBuddyTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
@@ -27,6 +36,18 @@ class MainActivity : ComponentActivity() {
                 }
             }
         }
+    }
+
+    private fun demonstrateFileStorage() {
+        val file = File(filesDir, "hw2-demo.json")
+        val song = Song(name = "Демо-песня", status = SongStatus.QUEUED)
+        val storage = FileStorage(file)
+        storage.add(song)
+        storage.save()
+
+        val restored = FileStorage(file)
+        restored.load()
+        check(restored.songs == listOf(song))
     }
 }
 
