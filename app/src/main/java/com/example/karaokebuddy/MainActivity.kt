@@ -1,6 +1,7 @@
 package com.example.karaokebuddy
 
 import android.os.Bundle
+import android.os.Debug
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -26,6 +27,7 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         if (BuildConfig.DEBUG) {
+            demonstrateProfilerProblems()
             demonstrateFileStorage()
         }
         setContent {
@@ -57,6 +59,32 @@ class MainActivity : ComponentActivity() {
         check(restored.songs.isEmpty())
         check(restored.archivedSongs == listOf(song))
         Timber.i("archive: %d active, %d archived", restored.songs.size, restored.archivedSongs.size)
+    }
+
+    private fun demonstrateProfilerProblems() {
+        if (intent.getBooleanExtra("hw2_leak", false)) {
+            retainedActivities.add(this)
+        } else {
+            retainedActivities.clear()
+        }
+        if (intent.getBooleanExtra("hw2_delay", false)) {
+            demonstrateSlowStartup()
+        }
+    }
+
+    private fun demonstrateSlowStartup() {
+        val end = Debug.threadCpuTimeNanos() + 800_000_000_0
+        var checksum = 1
+        do {
+            for (number in 0 until 100_000) {
+                checksum = (checksum xor number) * 31
+            }
+        } while (Debug.threadCpuTimeNanos() < end)
+        Timber.d("profiler CPU demo checksum: %d", checksum)
+    }
+
+    private companion object {
+        val retainedActivities = mutableListOf<MainActivity>()
     }
 }
 
