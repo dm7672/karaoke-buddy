@@ -16,7 +16,9 @@ import com.example.karaokebuddy.data.storage.FileStorage
 import com.example.karaokebuddy.domain.model.Song
 import com.example.karaokebuddy.domain.model.SongStatus
 import com.example.karaokebuddy.ui.theme.KaraokeBuddyTheme
+import timber.log.Timber
 import java.io.File
+import java.time.Instant
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,14 +42,21 @@ class MainActivity : ComponentActivity() {
 
     private fun demonstrateFileStorage() {
         val file = File(filesDir, "hw2-demo.json")
-        val song = Song(name = "Демо-песня", status = SongStatus.QUEUED)
-        val storage = FileStorage(file)
+        var now = Instant.parse("2026-11-20T12:00:00Z")
+        val expiresAt = now.plusSeconds(1)
+        val song = Song(name = "Демо-песня", status = SongStatus.QUEUED, expiresAt = expiresAt)
+        val storage = FileStorage(file) { now }
         storage.add(song)
         storage.save()
 
-        val restored = FileStorage(file)
+        val restored = FileStorage(file) { now }
         restored.load()
         check(restored.songs == listOf(song))
+
+        now = expiresAt
+        check(restored.songs.isEmpty())
+        check(restored.archivedSongs == listOf(song))
+        Timber.i("archive: %d active, %d archived", restored.songs.size, restored.archivedSongs.size)
     }
 }
 

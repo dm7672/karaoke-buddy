@@ -3,6 +3,7 @@ package com.example.karaokebuddy.domain.model
 import androidx.compose.ui.graphics.Color
 import java.io.File
 import java.net.URI
+import java.time.Instant
 import java.util.UUID
 
 data class Song(
@@ -16,6 +17,7 @@ data class Song(
     val lyricsText: String? = null,
     val lyricTimings: List<LyricTiming> = emptyList(),
     val isFavorite: Boolean = false,
+    val expiresAt: Instant? = null,
 ) {
     fun lyricLines(): List<LyricLine> {
         val text = lyricsText ?: return emptyList()

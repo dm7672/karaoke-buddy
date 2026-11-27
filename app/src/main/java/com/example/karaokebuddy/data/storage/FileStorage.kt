@@ -7,15 +7,31 @@ import com.example.karaokebuddy.domain.model.Song
 import timber.log.Timber
 import java.io.File
 import java.io.IOException
+import java.time.Instant
 import java.util.UUID
 
-class FileStorage internal constructor(private val file: File) {
+class FileStorage internal constructor(
+    private val file: File,
+    private val now: () -> Instant = { Instant.now() },
+) {
     constructor(context: Context) : this(File(context.filesDir, "songs.json"))
 
     private val items = linkedMapOf<UUID, Song>()
 
     val songs: List<Song>
-        get() = items.values.toList()
+        get() = songsByArchiveState(archived = false)
+
+    val archivedSongs: List<Song>
+        get() = songsByArchiveState(archived = true)
+
+    private fun songsByArchiveState(archived: Boolean): List<Song> {
+        val currentTime = now()
+        return items.values.filter { song ->
+            val expiresAt = song.expiresAt
+            val isArchived = expiresAt != null && expiresAt <= currentTime
+            isArchived == archived
+        }
+    }
 
     fun add(song: Song) {
         items[song.uid] = song

@@ -10,6 +10,8 @@ import org.json.JSONException
 import org.json.JSONObject
 import java.io.File
 import java.net.URI
+import java.time.Instant
+import java.time.format.DateTimeParseException
 import java.util.UUID
 import kotlin.time.Duration
 
@@ -45,10 +47,13 @@ fun Song.Companion.parse(json: JSONObject): Song? = try {
         lyricsText = lyricsText,
         lyricTimings = lyricTimings,
         isFavorite = json.optBoolean("isFavorite", false),
+        expiresAt = json.optionalNonBlankString("expiresAt")?.let(Instant::parse),
     )
 } catch (_: JSONException) {
     null
 } catch (_: IllegalArgumentException) {
+    null
+} catch (_: DateTimeParseException) {
     null
 }
 
@@ -71,6 +76,7 @@ val Song.json: JSONObject
         lyricsText?.let { put("lyricsText", it) }
         if (lyricTimings.isNotEmpty()) put("lyricTimings", JSONArray(lyricTimings.map { it.json }))
         put("isFavorite", isFavorite)
+        expiresAt?.let { put("expiresAt", it.toString()) }
     }
 
 private fun parseLyrics(json: JSONObject): Pair<String?, List<LyricTiming>> {
