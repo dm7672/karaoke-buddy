@@ -5,17 +5,11 @@ import android.os.Debug
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.karaokebuddy.data.storage.FileStorage
 import com.example.karaokebuddy.domain.model.Song
 import com.example.karaokebuddy.domain.model.SongStatus
+import com.example.karaokebuddy.ui.KaraokeApp
 import com.example.karaokebuddy.ui.theme.KaraokeBuddyTheme
 import timber.log.Timber
 import java.io.File
@@ -32,12 +26,7 @@ class MainActivity : ComponentActivity() {
         }
         setContent {
             KaraokeBuddyTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                KaraokeApp()
             }
         }
     }
@@ -85,21 +74,5 @@ class MainActivity : ComponentActivity() {
 
     private companion object {
         val retainedActivities = mutableListOf<MainActivity>()
-    }
-}
-
-@Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    KaraokeBuddyTheme {
-        Greeting("Android")
     }
 }

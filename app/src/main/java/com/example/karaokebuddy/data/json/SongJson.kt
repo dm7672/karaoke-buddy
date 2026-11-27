@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import com.example.karaokebuddy.domain.model.LyricTiming
 import com.example.karaokebuddy.domain.model.Song
+import com.example.karaokebuddy.domain.model.SongDifficulty
 import com.example.karaokebuddy.domain.model.SongStatus
 import org.json.JSONArray
 import org.json.JSONException
@@ -48,6 +49,10 @@ fun Song.Companion.parse(json: JSONObject): Song? = try {
         lyricTimings = lyricTimings,
         isFavorite = json.optBoolean("isFavorite", false),
         expiresAt = json.optionalNonBlankString("expiresAt")?.let(Instant::parse),
+        difficulty = SongDifficulty.valueOf(json.optString("difficulty", SongDifficulty.NORMAL.name)),
+        processingJobId = json.optionalNonBlankString("processingJobId"),
+        processingProgress = if (json.isNull("processingProgress")) null else json.getInt("processingProgress"),
+        processingMessage = json.optionalNonBlankString("processingMessage"),
     )
 } catch (_: JSONException) {
     null
@@ -77,6 +82,10 @@ val Song.json: JSONObject
         if (lyricTimings.isNotEmpty()) put("lyricTimings", JSONArray(lyricTimings.map { it.json }))
         put("isFavorite", isFavorite)
         expiresAt?.let { put("expiresAt", it.toString()) }
+        if (difficulty != SongDifficulty.NORMAL) put("difficulty", difficulty.name)
+        processingJobId?.let { put("processingJobId", it) }
+        processingProgress?.let { put("processingProgress", it) }
+        processingMessage?.let { put("processingMessage", it) }
     }
 
 private fun parseLyrics(json: JSONObject): Pair<String?, List<LyricTiming>> {

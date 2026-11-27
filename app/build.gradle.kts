@@ -3,6 +3,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val karaokeServerToken = providers.gradleProperty("karaokeServerToken").orElse("")
+
 android {
     namespace = "com.example.karaokebuddy"
     compileSdk {
@@ -17,6 +19,8 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        val token = karaokeServerToken.get().replace("\\", "\\\\").replace("\"", "\\\"")
+        buildConfigField("String", "KARAOKE_SERVER_TOKEN", "\"$token\"")
     }
 
     buildTypes {
@@ -40,6 +44,7 @@ android {
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(libs.androidx.compose.material3)
     implementation(libs.androidx.compose.ui)
     implementation(libs.androidx.compose.ui.graphics)

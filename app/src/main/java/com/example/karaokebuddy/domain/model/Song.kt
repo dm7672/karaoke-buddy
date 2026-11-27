@@ -18,6 +18,10 @@ data class Song(
     val lyricTimings: List<LyricTiming> = emptyList(),
     val isFavorite: Boolean = false,
     val expiresAt: Instant? = null,
+    val difficulty: SongDifficulty = SongDifficulty.NORMAL,
+    val processingJobId: String? = null,
+    val processingProgress: Int? = null,
+    val processingMessage: String? = null,
 ) {
     fun lyricLines(): List<LyricLine> {
         val text = lyricsText ?: return emptyList()
@@ -46,3 +50,5 @@ data class Song(
 
     companion object
 }
+
+enum class SongDifficulty { EASY, NORMAL, HARD }

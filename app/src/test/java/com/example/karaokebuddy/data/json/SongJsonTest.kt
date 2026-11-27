@@ -4,6 +4,7 @@ import androidx.compose.ui.graphics.Color
 import com.example.karaokebuddy.data.storage.FileStorage
 import com.example.karaokebuddy.domain.model.LyricTiming
 import com.example.karaokebuddy.domain.model.Song
+import com.example.karaokebuddy.domain.model.SongDifficulty
 import com.example.karaokebuddy.domain.model.SongStatus
 import org.junit.Assert.assertEquals
 import org.junit.Test
@@ -27,6 +28,10 @@ class SongJsonTest {
                 LyricTiming(7, 13, 1500, 500.milliseconds),
             ),
             isFavorite = true,
+            difficulty = SongDifficulty.HARD,
+            processingJobId = "demo-job",
+            processingProgress = 100,
+            processingMessage = "Готово",
         )
 
         val file = File.createTempFile("songs-", ".json")
