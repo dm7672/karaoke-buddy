@@ -2,11 +2,9 @@ package com.example.karaokebuddy.data.json
 
 import androidx.compose.ui.graphics.Color
 import com.example.karaokebuddy.data.storage.FileStorage
-import com.example.karaokebuddy.domain.model.OffsetLine
+import com.example.karaokebuddy.domain.model.LyricTiming
 import com.example.karaokebuddy.domain.model.Song
 import com.example.karaokebuddy.domain.model.SongStatus
-import com.example.karaokebuddy.domain.model.TimedLyrics
-import com.example.karaokebuddy.domain.model.TimedText
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.io.File
@@ -23,16 +21,11 @@ class SongJsonTest {
             sourceUrl = URI.create("https://www.youtube.com/watch?v=example"),
             instrumentalPath = File("audio/instrumental.wav"),
             vocalPath = File("audio/vocal.wav"),
-            timedLyrics = TimedLyrics(listOf(
-                OffsetLine(
-                    startMs = 1000,
-                    duration = 1000.milliseconds,
-                    words = listOf(
-                        TimedText("Пример", 1000, 500.milliseconds),
-                        TimedText("текста", 1500, 500.milliseconds),
-                    ),
-                ),
-            )),
+            lyricsText = "Пример\nтекста",
+            lyricTimings = listOf(
+                LyricTiming(0, 6, 1000, 500.milliseconds),
+                LyricTiming(7, 13, 1500, 500.milliseconds),
+            ),
             isFavorite = true,
         )
 

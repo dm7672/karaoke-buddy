@@ -2,11 +2,9 @@ package com.example.karaokebuddy.data.json
 
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
-import com.example.karaokebuddy.domain.model.OffsetLine
+import com.example.karaokebuddy.domain.model.LyricTiming
 import com.example.karaokebuddy.domain.model.Song
 import com.example.karaokebuddy.domain.model.SongStatus
-import com.example.karaokebuddy.domain.model.TimedLyrics
-import com.example.karaokebuddy.domain.model.TimedText
 import org.json.JSONArray
 import org.json.JSONException
 import org.json.JSONObject
@@ -35,6 +33,7 @@ internal fun songsFromJson(text: String): List<Song> {
 }
 
 fun Song.Companion.parse(json: JSONObject): Song? = try {
+    val (lyricsText, lyricTimings) = parseLyrics(json)
     Song(
         uid = UUID.fromString(json.getString("uid")),
         name = json.getString("name"),
@@ -43,7 +42,8 @@ fun Song.Companion.parse(json: JSONObject): Song? = try {
         sourceUrl = json.optionalNonBlankString("sourceUrl")?.let(URI::create),
         instrumentalPath = json.optionalNonBlankString("instrumentalPath")?.let(::File),
         vocalPath = json.optionalNonBlankString("vocalPath")?.let(::File),
-        timedLyrics = if (json.isNull("timedLyrics")) null else parseLyrics(json.getJSONObject("timedLyrics")),
+        lyricsText = lyricsText,
+        lyricTimings = lyricTimings,
         isFavorite = json.optBoolean("isFavorite", false),
     )
 } catch (_: JSONException) {
@@ -68,45 +68,35 @@ val Song.json: JSONObject
         sourceUrl?.let { put("sourceUrl", it.toString()) }
         instrumentalPath?.let { put("instrumentalPath", it.path) }
         vocalPath?.let { put("vocalPath", it.path) }
-        timedLyrics?.let { put("timedLyrics", it.json) }
+        lyricsText?.let { put("lyricsText", it) }
+        if (lyricTimings.isNotEmpty()) put("lyricTimings", JSONArray(lyricTimings.map { it.json }))
         put("isFavorite", isFavorite)
     }
 
-private fun parseLyrics(json: JSONObject): TimedLyrics {
-    val lines = json.getJSONArray("offsetLines")
-    return TimedLyrics((0 until lines.length()).map { lineIndex ->
-        val line = lines.getJSONObject(lineIndex)
-        val words = line.getJSONArray("words")
-        OffsetLine(
-            startMs = line.getLong("startMs"),
-            duration = Duration.parse(line.getString("duration")),
-            words = (0 until words.length()).map { wordIndex ->
-                val word = words.getJSONObject(wordIndex)
-                TimedText(
-                    text = word.getString("text"),
-                    startMs = word.getLong("startMs"),
-                    duration = Duration.parse(word.getString("duration")),
-                )
-            },
-        )
-    })
+private fun parseLyrics(json: JSONObject): Pair<String?, List<LyricTiming>> {
+    val text = if (json.isNull("lyricsText")) null else json.get("lyricsText")
+    require(text == null || text is String)
+
+    val timings = mutableListOf<LyricTiming>()
+    if (!json.isNull("lyricTimings")) {
+        val entries = json.getJSONArray("lyricTimings")
+        for (index in 0 until entries.length()) {
+            val entry = entries.getJSONObject(index)
+            timings.add(LyricTiming(
+                startIndex = entry.getInt("startIndex"),
+                endIndex = entry.getInt("endIndex"),
+                startMs = entry.getLong("startMs"),
+                duration = Duration.parse(entry.getString("duration")),
+            ))
+        }
+    }
+    return (text as String?) to timings
 }
 
-private val TimedLyrics.json: JSONObject
+private val LyricTiming.json: JSONObject
     get() = JSONObject().apply {
-        put("offsetLines", JSONArray(offsetLines.map { it.json }))
-    }
-
-private val OffsetLine.json: JSONObject
-    get() = JSONObject().apply {
-        put("startMs", startMs)
-        put("duration", duration.toString())
-        put("words", JSONArray(words.map { it.json }))
-    }
-
-private val TimedText.json: JSONObject
-    get() = JSONObject().apply {
-        put("text", text)
+        put("startIndex", startIndex)
+        put("endIndex", endIndex)
         put("startMs", startMs)
         put("duration", duration.toString())
     }
